@@ -163,3 +163,17 @@ SELECT * FROM teste_b;
 SELECT tbla.valor, tblb.valor
 FROM teste_a tbla
 CROSS JOIN teste_b tblb;
+
+--criando conexao entre varias tabelas
+
+SELECT banco.nome, agencia.nome, conta_corrente.numero, conta_corrente.digito, cliente.nome
+FROM banco
+JOIN agencia ON agencia.banco_numero = banco.numero
+JOIN conta_corrente
+	--ON conta_corrente.banco_numero = agencia.banco_numero
+	ON conta_corrente.banco_numero = banco.numero
+	AND conta_corrente.agencia_numero = agencia.numero
+JOIN cliente
+	ON cliente.numero = conta_corrente.cliente_numero;
+	
+
