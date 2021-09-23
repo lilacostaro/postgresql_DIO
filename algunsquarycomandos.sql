@@ -99,3 +99,67 @@ SELECT SUM(valor), tipo_transacao_id FROM cliente_transacoes GROUP BY tipo_trans
 SELECT SUM(valor), tipo_transacao_id FROM cliente_transacoes GROUP BY tipo_transacao_id ORDER BY tipo_transacao_id ASC;
 
 SELECT SUM(valor), tipo_transacao_id FROM cliente_transacoes GROUP BY tipo_transacao_id ORDER BY tipo_transacao_id DESC;
+
+SELECT count(1) FROM banco;
+SELECT count(1) FROM agencia;
+
+--join
+SELECT banco.numero, banco.nome, agencia.numero, agencia.nome
+FROM banco
+JOIN agencia ON agencia.banco_numero = banco.numero;
+
+--agrupa os bancos com agencias cadastrdas
+SELECT banco.numero
+FROM banco
+JOIN agencia ON agencia.banco_numero = banco.numero
+GROUP BY banco.numero;
+
+
+-- conta os bancos com agencias cadastradas
+SELECT count(distinct banco.numero)
+FROM banco
+JOIN agencia ON agencia.banco_numero = banco.numero;
+
+-- left join
+SELECT banco.numero, banco.nome, agencia.numero, agencia.nome
+FROM banco
+LEFT JOIN agencia ON agencia.banco_numero = banco.numero;
+
+-- left join agencia
+SELECT agencia.numero, agencia.nome, banco.numero, banco.nome
+FROM agencia
+LEFT JOIN banco ON banco.numero = agencia.banco_numero;
+
+--right join
+SELECT agencia.numero, agencia.nome, banco.numero, banco.nome
+FROM agencia
+RIGHT JOIN banco ON banco.numero = agencia.banco_numero;
+
+-- full join
+SELECT banco.numero, banco.nome, agencia.numero, agencia.nome
+FROM banco
+FULL JOIN agencia ON agencia.banco_numero = banco.numero;
+
+--
+CREATE TABLE IF NOT EXISTS teste_a(id serial primary key, valor varchar(10));
+CREATE TABLE IF NOT EXISTS teste_b(id serial primary key, valor varchar(10));
+
+INSERT INTO teste_a (valor) VALUES ('teste1');
+INSERT INTO teste_a (valor) VALUES ('teste2');
+INSERT INTO teste_a (valor) VALUES ('teste3');
+INSERT INTO teste_a (valor) VALUES ('teste4');
+INSERT INTO teste_a (valor) VALUES ('teste5');
+
+INSERT INTO teste_b (valor) VALUES ('teste_a');
+INSERT INTO teste_b (valor) VALUES ('teste_b');
+INSERT INTO teste_b (valor) VALUES ('teste_c');
+INSERT INTO teste_b (valor) VALUES ('teste_d');
+INSERT INTO teste_b (valor) VALUES ('teste_e');
+
+SELECT * FROM teste_a;
+SELECT * FROM teste_b;
+
+--cross join
+SELECT tbla.valor, tblb.valor
+FROM teste_a tbla
+CROSS JOIN teste_b tblb;
