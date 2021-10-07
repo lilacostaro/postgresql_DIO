@@ -1,9 +1,13 @@
+-- Comandos de Select
+
 SELECT numero, nome, ativo FROM banco;
 SELECT banco_numero, numero, nome FROM agencia;
 SELECT numero, nome, email FROM cliente;
 SELECT banco_numero, agencia_numero, numero, cliente_numero FROM conta_corrente;
 SELECT id, nome FROM tipo_transacao;
 SELECT banco_numero, agencia_numero, cliente_numero, valor FROM cliente_transacoes;
+
+-- Melhores praticas na criação, modificação e remoção de tabelas
 
 CREATE TABLE IF NOT EXISTS teste (
 	id SERIAL PRIMARY KEY,
@@ -20,16 +24,15 @@ CREATE TABLE IF NOT EXISTS teste (
 	PRIMARY KEY (cpf)
 );
 
+-- Melhores praticas para inserção, modificação e remoção de valores de uma tabela.
+
 INSERT INTO teste (cpf, nome, created_at) VALUES (02418475942, 'Camila Costa', now());
 
 INSERT INTO teste (cpf, nome, created_at) VALUES (02418475942, 'Camila Costa', now()) ON CONFLICT (cpf) DO NOTHING;
 
 UPDATE teste SET nome='Camila Rodrigues Costa' WHERE cpf = '2418475942';
 
-SELECT * FROM teste;
-DROP TABLE teste;
-
-SELECT * FROM conta_corrente;
+-- Consulta dos campos da tabela!
 
 SELECT * FROM information_schema.columns WHERE table_name = 'banco';
 SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'banco';
@@ -38,6 +41,8 @@ SELECT column_name, data_type FROM information_schema.columns WHERE table_name =
 SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'cliente_transacoes';
 SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'conta_corrente';
 SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'tipo_transacao';
+
+-- Algumas operaçôes 
 
 --AVG
 --COUNT (having)
@@ -78,7 +83,7 @@ SELECT MAX(valor) FROM cliente_transacoes;
 SELECT MIN(numero) FROM cliente;
 SELECT MIN(valor) FROM cliente_transacoes;
 
---Group by function
+-- Group by function
 
 SELECT MAX(valor), tipo_transacao_id FROM cliente_transacoes GROUP BY tipo_transacao_id;
 
@@ -88,13 +93,13 @@ SELECT COUNT(id), tipo_transacao_id FROM cliente_transacoes GROUP BY tipo_transa
 
 SELECT COUNT(id), tipo_transacao_id FROM cliente_transacoes GROUP BY tipo_transacao_id HAVING COUNT(id) > 150 and COUNT(id) < 800;
 
---SUM
+-- SUM
 
 SELECT SUM(valor) FROM cliente_transacoes;
 
 SELECT SUM(valor), tipo_transacao_id FROM cliente_transacoes GROUP BY tipo_transacao_id;
 
---order by
+-- order by
 
 SELECT SUM(valor), tipo_transacao_id FROM cliente_transacoes GROUP BY tipo_transacao_id ORDER BY tipo_transacao_id ASC;
 
@@ -102,6 +107,8 @@ SELECT SUM(valor), tipo_transacao_id FROM cliente_transacoes GROUP BY tipo_trans
 
 SELECT count(1) FROM banco;
 SELECT count(1) FROM agencia;
+
+-- Tipos de Join
 
 --join
 SELECT banco.numero, banco.nome, agencia.numero, agencia.nome
@@ -140,7 +147,8 @@ SELECT banco.numero, banco.nome, agencia.numero, agencia.nome
 FROM banco
 FULL JOIN agencia ON agencia.banco_numero = banco.numero;
 
---
+-- criação de tabelas para executar o cross join 
+
 CREATE TABLE IF NOT EXISTS teste_a(id serial primary key, valor varchar(10));
 CREATE TABLE IF NOT EXISTS teste_b(id serial primary key, valor varchar(10));
 
@@ -194,3 +202,118 @@ JOIN cliente_transacoes
 	AND cliente_transacoes.conta_corrente_numero = conta_corrente.numero
 JOIN tipo_transacao
 	ON tipo_transacao.id = cliente_transacoes.tipo_transacao_id;
+
+----------------------------------------------
+-- SUBSELECT QUARY
+----------------------------------------------
+SELECT banco.numero, banco.nome
+FROM banco
+JOIN (
+	SELECT 123 AS banco_numero
+) params 
+on params.banco_numero = banco_numero;
+
+----------------------------------------------
+--QUARYS COM WITH
+----------------------------------------------
+WITH tbl_tmp_banco AS (
+	SELECT numero, nome
+	FROM banco
+)
+SELECT numero, nome
+FROM tbl_tmp_banco;
+
+-----------------------------------------------------
+--SELECIONAR UM BANCO ESPECIFICO
+-----------------------------------------------------
+WITH params AS (
+	SELECT 213 AS banco_numero), tbl_tmp_banco AS (
+	SELECT numero, nome
+	FROM banco
+	JOIN params ON params.banco_numero = banco.numero
+)
+SELECT numero, nome
+FROM tbl_tmp_banco;
+
+-----------------------------------------------------
+WITH params AS (
+	SELECT 260 AS banco_numero), tbl_tmp_banco AS (
+	SELECT numero, nome
+	FROM banco
+	JOIN params ON params.banco_numero = banco.numero
+)
+SELECT numero, nome
+FROM tbl_tmp_banco;
+
+---------------------------------------------------------
+WITH clientes_e_transacoes AS (
+	SELECT cliente.nome AS cliente_nome,
+	       tipo_transacao.nome AS tipo_transacao_nome,
+	       Cliente_transacoes.valor AS transacoes_valor
+	FROM cliente_transacoes
+	JOIN cliente ON cliente.numero = cliente_transacoes.cliente_numero
+	JOIN tipo_transacao ON tipo_transacao_id = cliente_transacoes.tipo_transacao_id
+)
+SELECT cliente_nome, tipo_transacao_nome, transacoes_valor
+FROM clientes_e_transacoes;  --RETORNA O VALOR ERRADO
+---------
+WITH clientes_e_transacoes AS (
+	SELECT cliente.nome AS cliente_nome,
+	       tipo_transacao.nome AS tipo_transacao_nome,
+	       Cliente_transacoes.valor AS transacoes_valor
+	FROM cliente_transacoes
+	JOIN cliente ON cliente.numero = cliente_transacoes.cliente_numero
+	JOIN tipo_transacao ON tipo_transacao_id = cliente_transacoes.tipo_transacao_id
+)
+SELECT cliente_nome, tipo_transacao_nome, transacoes_valor
+FROM clientes_e_transacoes; ----- RETORNA O VALOR ERRADO
+
+------------------------
+
+WITH clientes_e_transacoes AS (
+	SELECT cliente.nome AS cliente_nome,
+	       tipo_transacao.nome AS tipo_transacao_nome,
+	       cliente_transacoes.valor AS transacoes_valor
+	FROM cliente_transacoes
+	JOIN cliente ON cliente.numero = cliente_transacoes.cliente_numero
+	JOIN tipo_transacao ON tipo_transacao_id = cliente_transacoes.tipo_transacao_id
+)
+SELECT cliente_nome, tipo_transacao_nome, transacoes_valor
+FROM clientes_e_transacoes; ------- RETORNA VALOR ERRADO
+-----------------
+WITH clientes_e_transacoes AS (
+	SELECT cliente.nome AS cliente_nome,
+	       tipo_transacao.nome AS tipo_transacao_nome,
+	       cliente_transacoes.valor AS transacoes_valor
+	FROM cliente_transacoes
+	JOIN cliente ON cliente.numero = cliente_transacoes.cliente_numero
+	JOIN tipo_transacao ON tipo_transacao.id = cliente_transacoes.tipo_transacao_id
+)
+SELECT cliente_nome, tipo_transacao_nome, transacoes_valor
+FROM clientes_e_transacoes;-------RETORNA VALOR CORRETO
+-------------------------------------
+-- Quary com Filtro ILIKE -------------
+WITH clientes_e_transacoes AS (
+	SELECT cliente.nome AS cliente_nome,
+	       tipo_transacao.nome AS tipo_transacao_nome,
+	       cliente_transacoes.valor AS transacoes_valor
+	FROM cliente_transacoes
+	JOIN cliente ON cliente.numero = cliente_transacoes.cliente_numero
+	JOIN tipo_transacao ON tipo_transacao.id = cliente_transacoes.tipo_transacao_id
+	JOIN banco ON banco.numero = cliente_transacoes.banco_numero AND banco.nome ILIKE '%Itaú%'
+)
+SELECT cliente_nome, tipo_transacao_nome, transacoes_valor
+FROM clientes_e_transacoes;--- retorna 217 rows ----- banco Itaú
+-------------------------------------------------
+WITH clientes_e_transacoes AS (
+	SELECT cliente.nome AS cliente_nome,
+	       tipo_transacao.nome AS tipo_transacao_nome,
+	       cliente_transacoes.valor AS transacoes_valor
+	FROM cliente_transacoes
+	JOIN cliente ON cliente.numero = cliente_transacoes.cliente_numero
+	JOIN tipo_transacao ON tipo_transacao.id = cliente_transacoes.tipo_transacao_id
+	JOIN banco ON banco.numero = cliente_transacoes.banco_numero AND banco.nome ILIKE '%Itaú%'
+)
+SELECT sum(transacoes_valor), tipo_transacao_nome
+FROM clientes_e_transacoes
+group by tipo_transacao_nome;--- soma do valor total por tipo de transacao ----- banco Itaú
